@@ -1,41 +1,66 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_PLACAS 1000000 // Tamanho máximo estimado
+#define MAX 10000001
 
-int placas[MAX_PLACAS];
-int total_placas = 0;
+int BIT[MAX];
 
-// Função de comparação para qsort
-int comparar(const void *a, const void *b) {
-    return (*(int*)a - *(int*)b);
-}
-
-void inserir_placa(int placa) {
-    placas[total_placas++] = placa;
-    qsort(placas, total_placas, sizeof(int), comparar);
-}
-
-void listar_menores(int T) {
-    for (int i = 0; i < T; i++) {
-        if (i != 0) printf(" ");
-        printf("%d", placas[i]);
+// Atualiza o BIT no índice idx com valor val
+void update(int idx, int val) {
+    while (idx < MAX) {
+        BIT[idx] += val;
+        idx += idx & (-idx);
     }
-    printf("\n");
+}
+
+// Consulta soma prefixada no BIT até idx
+int query(int idx) {
+    int sum = 0;
+    while (idx > 0) {
+        sum += BIT[idx];
+        idx -= idx & (-idx);
+    }
+    return sum;
+}
+
+// Busca o k-ésimo número inserido (k entre 1 e total elementos)
+int busca_k_esimo(int k) {
+    int idx = 0;
+    int bitMask = 1 << 24; // maior potência de 2 menor que MAX (ajustar se precisar)
+    
+    while (bitMask != 0) {
+        int tIdx = idx + bitMask;
+        if (tIdx < MAX && BIT[tIdx] < k) {
+            k -= BIT[tIdx];
+            idx = tIdx;
+        }
+        bitMask >>= 1;
+    }
+    return idx + 1;
 }
 
 int main() {
-    int O, valor;
-    
+    int O, x;
+    int total = 0;
+
     while (scanf("%d", &O) != EOF) {
         if (O == 1) {
-            scanf("%d", &valor);
-            inserir_placa(valor);
-        } else if (O == 2) {
-            scanf("%d", &valor);
-            listar_menores(valor);
+            scanf("%d", &x);
+            x++;  // BIT usa índices 1-based
+            update(x, 1);
+            total++;
+        }
+        else if (O == 2) {
+            scanf("%d", &x);
+            if (x > total) x = total;
+
+            for (int i = 1; i <= x; i++) {
+                if (i > 1) printf(" ");
+                int val = busca_k_esimo(i) - 1; // volta ao zero-based
+                printf("%d", val);
+            }
+            printf("\n");
         }
     }
-    
     return 0;
 }

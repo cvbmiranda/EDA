@@ -1,39 +1,24 @@
-#include <stdio.h>
-
-// Função de busca binária para encontrar j tal que v[j-1] < x <= v[j]
-int busca_binaria(int *v, int n, int x) {
-    if (n == 0) return 0;
-    if (x <= v[0]) return 0;
-    if (x > v[n-1]) return n;
-
-    int left = 0, right = n - 1, j = n;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-        if (v[mid] >= x) {
-            j = mid;
-            right = mid - 1;
-        } else {
-            left = mid + 1;
-        }
-    }
-    return j;
+void troca(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
-int main() {
-    int N, M;
-    scanf("%d %d", &N, &M);
+int indice_minimo(int *v, int i, int n) {
+    if (i == n - 1)
+        return i;
+    int min_indice = indice_minimo(v, i + 1, n);
+    return (v[i] < v[min_indice]) ? i : min_indice;
+}
 
-    int v[N];
-    for (int i = 0; i < N; i++) {
-        scanf("%d", &v[i]);
-    }
+void selecao_recursiva(int *v, int i, int n) {
+    if (i == n)
+        return;
+    int min_indice = indice_minimo(v, i, n);
+    troca(&v[i], &v[min_indice]);
+    selecao_recursiva(v, i + 1, n);
+}
 
-    for (int i = 0; i < M; i++) {
-        int x;
-        scanf("%d", &x);
-        printf("%d\n", busca_binaria(v, N, x));
-    }
-
-    return 0;
+void ordena(int *v, int n) {
+    selecao_recursiva(v, 0, n);
 }
