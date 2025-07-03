@@ -7,23 +7,21 @@ typedef struct celula {
 } celula;
 
 void imprime(celula *le) {
-    celula *atual = le->prox;
-    
-    while (atual != NULL) {
-        printf("%d -> ", atual->dado);
-        atual = atual->prox;
+    celula *p = le->prox;
+    while (p != NULL) {
+        printf("%d -> ", p->dado);
+        p = p->prox;
     }
-    
-    printf("NULL");
+    printf("NULL\n");
 }
 
-void imprime_rec(celula *le) {
-    if (le->prox == NULL) {
-        printf("NULL");
-        return;
+void imprime_rec (celula *le) {
+    celula *p = le->prox;
+    if (p != NULL) {
+        printf("%d -> ", p->dado);
+        imprime_rec(p);
+    } else {
+        printf("NULL\n");
     }
-    
-    printf("%d -> ", le->prox->dado);
-    imprime_rec(le->prox);
 }
 
