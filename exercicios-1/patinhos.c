@@ -1,103 +1,60 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX 1005
-
-int P, M = 0, N = 0;
-char mapa[MAX][MAX];
-int visitado[MAX][MAX];
-
-int dx[] = {1, -1, 0, 0};
-int dy[] = {0, 0, 1, -1};
-
-int fila_x[MAX * MAX], fila_y[MAX * MAX];
-int frente, tras;
-
-int bfs(int sx, int sy) {
-    int mortos = 0;
-    memset(visitado, 0, sizeof(visitado));
-    frente = tras = 0;
-    fila_x[tras] = sx;
-    fila_y[tras] = sy;
-    tras++;
-    visitado[sx][sy] = 1;
-
-    while (frente < tras) {
-        int x = fila_x[frente];
-        int y = fila_y[frente];
-        frente++;
-
-        for (int d = 0; d < 4; d++) {
-            int nx = x + dx[d];
-            int ny = y + dy[d];
-
-            if (nx < 0 || ny < 0 || nx >= M || ny >= N) continue;
-            if (visitado[nx][ny]) continue;
-
-            if (mapa[nx][ny] == '_' || mapa[nx][ny] == 'E') {
-                visitado[nx][ny] = 1;
-                fila_x[tras] = nx;
-                fila_y[tras] = ny;
-                tras++;
-            } else if (mapa[nx][ny] == 'o') {
-                // Um pato morre, buraco é preenchido e se torna ponte
-                mortos++;
-                mapa[nx][ny] = '_';
-                visitado[nx][ny] = 1;
-                fila_x[tras] = nx;
-                fila_y[tras] = ny;
-                tras++;
-            }
-        }
-    }
-
-    // Verifica se há pelo menos um 'E' alcançado
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
-            if (mapa[i][j] == 'E' && visitado[i][j]) {
-                return mortos;
-            }
-        }
-    }
-
-    return -1; // nenhum chegou
-}
 
 int main() {
-    char linha[MAX];
+    // Declaração do mapa como uma matriz 1001x1001 de caracteres
+    char mapa[1001][1001];
+    // P: número de pessoas, inicio_i/inicio_j: coordenadas do ponto inicial 'S'
+    int P, inicio_i, inicio_j;
+
+    // Lê o número de pessoas (P)
     scanf("%d", &P);
-    getchar(); // consumir newline
+    // Guarda o valor inicial de P para comparação posterior
+    int Pinicial = P;
 
-    while (fgets(linha, MAX, stdin)) {
-        if (linha[strlen(linha) - 1] == '\n') linha[strlen(linha) - 1] = '\0';
-        strcpy(mapa[M], linha);
-        M++;
-    }
-    N = strlen(mapa[0]);
-
-    int sx = -1, sy = -1;
-
-    for (int i = 0; i < M; i++) {
-        for (int j = 0; j < N; j++) {
+    // Variáveis para percorrer o mapa durante a leitura
+    int i = 0, j = 0;
+    
+    // Loop para ler o mapa caractere por caractere até o final do arquivo (EOF)
+    while (scanf("%c", &mapa[i][j]) != EOF) {
+        // Ignora caracteres de nova linha ('\n')
+        if (mapa[i][j] != '\n') {
+            // Se encontrar o ponto inicial 'S', guarda suas coordenadas
             if (mapa[i][j] == 'S') {
-                sx = i;
-                sy = j;
-                break;
+                inicio_i = i;
+                inicio_j = j;
             }
+            j++; // Avança para a próxima coluna
         }
-        if (sx != -1) break;
+        else {
+            // Quando encontrar nova linha, vai para a próxima linha e reseta a coluna
+            i++;
+            j = 0;
+        }
     }
 
-    int mortos = bfs(sx, sy);
-
-    if (mortos == -1 || mortos >= P) {
-        printf("Todos morreram :)\n");
-    } else if (mortos == 0) {
-        printf("Nenhum morreu :(\n");
-    } else {
-        printf("%d encontraram o vovo\n", P - mortos);
+    // Posiciona no ponto inicial 'S' para começar a navegação
+    i = inicio_i;
+    j = inicio_j;
+    
+    // Loop de navegação: continua até encontrar o ponto de saída 'E'
+    while (mapa[i][j] != 'E') {
+        // Se encontrar um item 'o', decrementa o contador de pessoas
+        if (mapa[i][j] == 'o') P--;
+        
+        // Marca a posição atual como visitada (com '#')
+        mapa[i][j] = '#';
+        
+        // Lógica de movimento (prioridade: cima, esquerda, baixo, direita)
+        if (i > 0 && mapa[i-1][j] != '#') i--;         // Tenta mover para cima
+        else if (j > 0 && mapa[i][j-1] != '#') j--;     // Tenta mover para esquerda
+        else if (i <= 1000 && mapa[i+1][j] != '#') i++; // Tenta mover para baixo
+        else if (j <= 1000 && mapa[i][j+1] != '#') j++; // Tenta mover para direita
     }
+
+    // Verifica o resultado final e imprime a mensagem correspondente
+    if (P == 0) printf("Todos morreram :)\n");          // Todos pegaram itens
+    else if (P == Pinicial) printf("Nenhum morreu :(\n"); // Ninguém pegou itens
+    else printf("%d encontraram o vovo\n", P);          // Alguns pegaram itens
 
     return 0;
 }
